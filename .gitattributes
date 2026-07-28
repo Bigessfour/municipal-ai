@@ -1,1 +1,2 @@
 source_data/EP_Ordinances.pdf filter=lfs diff=lfs merge=lfs -text
+full_text_ocr.txt filter=lfs diff=lfs merge=lfs -text

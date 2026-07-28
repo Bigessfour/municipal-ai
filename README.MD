@@ -47,13 +47,18 @@ Because the file is ~72 MB, we **did not commit it as a normal git blob**. Inste
 2. Tracked PDFs under `source_data/` via `.gitattributes`
 3. Committed the LFS pointer; the binary lives in GitHub LFS storage
 
-Collaborators must run `git lfs pull` after clone to get the real PDF (not the 133-byte stub pointer).
+Collaborators must run `git lfs pull` after clone to get the real PDF **and** the shared OCR cache (not 133-byte LFS stubs).
 
 ## Catch-up for collaborators
 
 ### 1. Clone and install Git LFS
 
-The ordinances PDF (~72 MB) is stored with Git LFS. Install once per machine:
+Git LFS stores:
+
+| File | Approx. size | Purpose |
+| ---- | ------------ | ------- |
+| `source_data/EP_Ordinances.pdf` | ~72 MB | Source PDF |
+| `full_text_ocr.txt` | ~7.6 MB | Day 1 OCR cache for Day 2+ |
 
 ```bash
 brew install git-lfs
@@ -63,10 +68,10 @@ cd municipal-ai
 git lfs pull
 ```
 
-Confirm the PDF is real (not a 133-byte stub):
+Confirm both LFS files are real (not tiny stubs):
 
 ```bash
-ls -lh source_data/EP_Ordinances.pdf
+ls -lh source_data/EP_Ordinances.pdf full_text_ocr.txt
 ```
 
 ### 2. Python environment
@@ -77,7 +82,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**macOS OCR dependencies** (required by `unstructured[pdf,ocr]`):
+**macOS OCR dependencies** (only needed if you re-run OCR):
 
 ```bash
 brew install poppler tesseract
@@ -85,13 +90,14 @@ brew install poppler tesseract
 
 ### 3. Run OCR ingest (Lab 1b)
 
+With `full_text_ocr.txt` already present from LFS, ingest is an instant **cache hit**:
+
 ```bash
 python ingest.py
 ```
 
-- First run: OCR on the PDF in **10-page batches** (progress logged per batch; 30+ minutes total with `hi_res`).
-- If interrupted, rerun the same command — it **resumes** from `full_text_ocr.progress.json`.
-- Second run (after cache exists): instant hit from `full_text_ocr.txt` (gitignored, generated locally).
+- Cache hit: loads shared `full_text_ocr.txt` immediately (~8M characters).
+- Cache miss (if you delete the file): OCR runs in **10-page batches** (hours with `hi_res`); resumes via `full_text_ocr.progress.json` if interrupted.
 
 Lab reference: `aico-echo/Module03-CICD/Week14-CICDPipeline/Day01/labs/02-lab-Ingest_using_OCR.md`
 
@@ -178,11 +184,12 @@ Switch `ingest.py` to `strategy="fast"`, delete `full_text_ocr.txt`, and rerun.
 | Path                          | Reason                                      |
 | ----------------------------- | ------------------------------------------- |
 | `venv/`                       | Local virtualenv                            |
-| `full_text_ocr.txt`           | Generated OCR cache                         |
 | `full_text_ocr.partial.txt`   | In-progress OCR batch cache                 |
 | `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR           |
 | `ingest_ocr.log`              | Local run log                               |
 | Other files in `source_data/` | Only `EP_Ordinances.pdf` is tracked via LFS |
+
+`full_text_ocr.txt` **is** in git via **LFS** so the team does not re-run multi-hour OCR.
 
 ---
 

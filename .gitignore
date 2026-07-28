@@ -9,8 +9,7 @@ chroma_db/
 source_data/*
 !source_data/EP_Ordinances.pdf
 
-# Generated files
-full_text_ocr.txt
+# Generated / local OCR scratch (final cache is LFS-tracked)
 full_text_ocr.partial.txt
 full_text_ocr.progress.json
 full_text_ocr_cleaned.txt
