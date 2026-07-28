@@ -153,7 +153,7 @@ Full `hi_res` OCR on **2,542 pages** saturated a MacBook Pro (M5): long wall-clo
 | **MacBook Pro M5** (local early run) | ~290 pages in ~15 minutes before we stopped for EC2 | **≈ 19–20 pages/min** → uninterrupted full file **≈ 2.1 hours** *if* the laptop could sustain it |
 | **Why we still used EC2** | M5 was faster *per page* early on, but the full `hi_res` job **thrashed the machine** (CPU/RAM, heat, couldn’t leave it overnight / shut down). Spot ran **unattended**, with page-batch **resume**, then we pulled a validated cache and terminated the instance. |
 
-**Tradeoff we accepted:** slightly slower pages/min on CPU Spot vs M5, in exchange for reliable overnight completion and not melting the laptop. Output contract unchanged: one gitignored `full_text_ocr.txt` for Day 2.
+**Tradeoff we accepted:** slightly slower pages/min on CPU Spot vs M5, in exchange for reliable overnight completion and not melting the laptop. Output contract unchanged: one `full_text_ocr.txt` for Day 2 (now shared via Git LFS).
 
 ### Page-batch OCR chunking
 
