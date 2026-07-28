@@ -1,1 +1,6 @@
 ruff
+langchain
+langchain-community
+# For advanced PDF processing and OCR
+unstructured[pdf,ocr]
+PyMuPDF

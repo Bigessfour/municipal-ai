@@ -1,8 +1,11 @@
 # Environment and local data
 venv/
-source_data/
 chroma_db/
 *.sqlite3
+
+# source_data: only the LFS-tracked PDF is committed
+source_data/*
+!source_data/EP_Ordinances.pdf
 
 # Generated files
 full_text_ocr.txt
@@ -11,3 +14,7 @@ full_text_ocr_cleaned.txt
 # Python cache
 __pycache__/
 *.pyc
+
+# Logs and OS
+ingest_ocr.log
+.DS_Store
