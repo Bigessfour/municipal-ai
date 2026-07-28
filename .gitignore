@@ -1,0 +1,13 @@
+# Environment and local data
+venv/
+source_data/
+chroma_db/
+*.sqlite3
+
+# Generated files
+full_text_ocr.txt
+full_text_ocr_cleaned.txt
+
+# Python cache
+__pycache__/
+*.pyc
