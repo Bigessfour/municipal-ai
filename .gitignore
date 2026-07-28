@@ -1,4 +1,6 @@
 # Environment and local data
+.env
+.env.*
 venv/
 chroma_db/
 *.sqlite3
@@ -9,6 +11,8 @@ source_data/*
 
 # Generated files
 full_text_ocr.txt
+full_text_ocr.partial.txt
+full_text_ocr.progress.json
 full_text_ocr_cleaned.txt
 
 # Python cache
