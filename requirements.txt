@@ -4,3 +4,10 @@ langchain-community
 # For advanced PDF processing and OCR
 unstructured[pdf,ocr]
 PyMuPDF
+langchain-google-genai
+langchain-aws
+boto3
+langchain-ollama
+langchain-chroma
+python-dotenv
+tqdm

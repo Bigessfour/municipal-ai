@@ -1,6 +1,7 @@
 # Environment and local data
 .env
 .env.*
+!.env.example
 venv/
 chroma_db/
 *.sqlite3
@@ -20,4 +21,6 @@ __pycache__/
 
 # Logs and OS
 ingest_ocr.log
+load_status.json
+load_to_db_ollama.log
 .DS_Store

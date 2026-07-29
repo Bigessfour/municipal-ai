@@ -2,6 +2,8 @@
 
 Question-answering RAG app over the El Paso municipal code (Week 14 capstone).
 
+**Team:** Stephen McKitrick ([@Bigessfour](https://github.com/Bigessfour)) · Guy Sharp ([@gsharp23](https://github.com/gsharp23)) · Stewart Anderson ([@Stubud7](https://github.com/Stubud7))
+
 ## Day 1 lab goals (front and center)
 
 Day 1 is two labs: **Lab 1a — Project Foundation & CI**, and **Lab 1b — OCR ingest with caching**. Together they give us a shared repo with automated quality gates and a reliable text extract of the ordinances PDF.
@@ -55,10 +57,10 @@ Collaborators must run `git lfs pull` after clone to get the real PDF **and** th
 
 Git LFS stores:
 
-| File | Approx. size | Purpose |
-| ---- | ------------ | ------- |
-| `source_data/EP_Ordinances.pdf` | ~72 MB | Source PDF |
-| `full_text_ocr.txt` | ~7.6 MB | Day 1 OCR cache for Day 2+ |
+| File                            | Approx. size | Purpose                    |
+| ------------------------------- | ------------ | -------------------------- |
+| `source_data/EP_Ordinances.pdf` | ~72 MB       | Source PDF                 |
+| `full_text_ocr.txt`             | ~7.6 MB      | Day 1 OCR cache for Day 2+ |
 
 ```bash
 brew install git-lfs
@@ -118,40 +120,40 @@ Full `hi_res` OCR on **2,542 pages** saturated a MacBook Pro (M5): long wall-clo
 
 #### What we launched
 
-| Setting | Value |
-| ------- | ----- |
-| AWS account / profile | Code Platoon · `codeplatoon` · `us-east-1` |
-| Purchase option | **Spot** (`one-time`, interrupt → terminate) |
-| AMI | Ubuntu 24.04 (`ami-052355af2a014bd2c`) — Deep Learning GPU AMI blocked for our use case below |
-| Instance type | **`c5.xlarge`** (4 vCPU, 8 GiB) |
-| Key pair | `stephen-key` |
-| VPC / subnet | Default VPC · public subnet `subnet-002827af9379deb64` (`us-east-1a`) |
-| Security group | `municipal-ai-ocr` (`sg-0ee365f18ea667ecb`) — SSH/22 from Stephen’s public IP only |
-| Storage | 80 GB **gp3** root volume |
-| Name tag | `municipal-ai-ocr` · instance `i-0885869c1c8cb0e83` |
-| Bootstrap | User-data + manual install: `poppler-utils`, `tesseract-ocr`, `libgl1`, Python venv, `pip install -r requirements.txt` |
-| Job transfer | SCP tarball (chunked `ingest.py`, LFS PDF, `.env` / `HF_TOKEN`, resume progress) — private GH clone avoided |
-| Run style | `nohup python ingest.py > ingest_ocr.log 2>&1 &` (laptop can shut down) |
-| Output pull | SCP `full_text_ocr.txt` → local; backup `s3://municipal-ai-ocr-388691194728/` |
-| Cleanup | Validated SHA locally, then **terminated** the Spot instance |
+| Setting               | Value                                                                                                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| AWS account / profile | Code Platoon · `codeplatoon` · `us-east-1`                                                                             |
+| Purchase option       | **Spot** (`one-time`, interrupt → terminate)                                                                           |
+| AMI                   | Ubuntu 24.04 (`ami-052355af2a014bd2c`) — Deep Learning GPU AMI blocked for our use case below                          |
+| Instance type         | **`c5.xlarge`** (4 vCPU, 8 GiB)                                                                                        |
+| Key pair              | `stephen-key`                                                                                                          |
+| VPC / subnet          | Default VPC · public subnet `subnet-002827af9379deb64` (`us-east-1a`)                                                  |
+| Security group        | `municipal-ai-ocr` (`sg-0ee365f18ea667ecb`) — SSH/22 from Stephen’s public IP only                                     |
+| Storage               | 80 GB **gp3** root volume                                                                                              |
+| Name tag              | `municipal-ai-ocr` · instance `i-0885869c1c8cb0e83`                                                                    |
+| Bootstrap             | User-data + manual install: `poppler-utils`, `tesseract-ocr`, `libgl1`, Python venv, `pip install -r requirements.txt` |
+| Job transfer          | SCP tarball (chunked `ingest.py`, LFS PDF, `.env` / `HF_TOKEN`, resume progress) — private GH clone avoided            |
+| Run style             | `nohup python ingest.py > ingest_ocr.log 2>&1 &` (laptop can shut down)                                                |
+| Output pull           | SCP `full_text_ocr.txt` → local; backup `s3://municipal-ai-ocr-388691194728/`                                          |
+| Cleanup               | Validated SHA locally, then **terminated** the Spot instance                                                           |
 
 #### AMI / IAM configuration (what we wanted vs what class policy allows)
 
-| Intent | Result |
-| ------ | ------ |
-| Preferred AMI | Deep Learning OSS Nvidia Driver AMI GPU PyTorch (Ubuntu 24.04) |
-| Preferred type | `g4dn.xlarge` / `g5.xlarge` Spot for YOLOX/`hi_res` GPU accel |
-| Blocker | IAM identity policy **`cp-aico-echo-cost-guard`** — `CapEC2InstanceFamilies` **Deny** `ec2:RunInstances` unless type is in an allow-list (`t2/t3/t3a/t4g.*`, `m5/m5a/m6i.large|xlarge`, `c5/c5a.large|xlarge`, `r5.large|xlarge`) |
-| Fallback | Largest useful CPU on the allow-list: **`c5.xlarge` Spot** + stock **Ubuntu 24.04** AMI (no GPU; CPU ONNX/Torch path) |
+| Intent         | Result                                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Preferred AMI  | Deep Learning OSS Nvidia Driver AMI GPU PyTorch (Ubuntu 24.04)                                                                                                                 |
+| Preferred type | `g4dn.xlarge` / `g5.xlarge` Spot for YOLOX/`hi_res` GPU accel                                                                                                                  |
+| Blocker        | IAM identity policy **`cp-aico-echo-cost-guard`** — `CapEC2InstanceFamilies` **Deny** `ec2:RunInstances` unless type is in an allow-list (`t2/t3/t3a/t4g.*`, `m5/m5a/m6i.large | xlarge`, `c5/c5a.large | xlarge`, `r5.large | xlarge`) |
+| Fallback       | Largest useful CPU on the allow-list: **`c5.xlarge` Spot** + stock **Ubuntu 24.04** AMI (no GPU; CPU ONNX/Torch path)                                                          |
 
 #### Timing: AWS vs MacBook Pro (M5)
 
-| Run | Scope | Measured / estimated |
-| --- | ----- | -------------------- |
-| **EC2 Spot `c5.xlarge`** | Pages **481–2542** (resume after local progress) | **15,426.47 s ≈ 4.29 hours** · ~**8 pages/min** · log: `OCR process finished in 15426.47 seconds` → **7,992,823** chars |
-| **EC2 extrapolated full file** | All **2,542** pages at same rate | **≈ 5.3 hours** wall-clock |
-| **MacBook Pro M5** (local early run) | ~290 pages in ~15 minutes before we stopped for EC2 | **≈ 19–20 pages/min** → uninterrupted full file **≈ 2.1 hours** *if* the laptop could sustain it |
-| **Why we still used EC2** | M5 was faster *per page* early on, but the full `hi_res` job **thrashed the machine** (CPU/RAM, heat, couldn’t leave it overnight / shut down). Spot ran **unattended**, with page-batch **resume**, then we pulled a validated cache and terminated the instance. |
+| Run                                  | Scope                                                                                                                                                                                                                                                              | Measured / estimated                                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| **EC2 Spot `c5.xlarge`**             | Pages **481–2542** (resume after local progress)                                                                                                                                                                                                                   | **15,426.47 s ≈ 4.29 hours** · ~**8 pages/min** · log: `OCR process finished in 15426.47 seconds` → **7,992,823** chars |
+| **EC2 extrapolated full file**       | All **2,542** pages at same rate                                                                                                                                                                                                                                   | **≈ 5.3 hours** wall-clock                                                                                              |
+| **MacBook Pro M5** (local early run) | ~290 pages in ~15 minutes before we stopped for EC2                                                                                                                                                                                                                | **≈ 19–20 pages/min** → uninterrupted full file **≈ 2.1 hours** *if* the laptop could sustain it                        |
+| **Why we still used EC2**            | M5 was faster *per page* early on, but the full `hi_res` job **thrashed the machine** (CPU/RAM, heat, couldn’t leave it overnight / shut down). Spot ran **unattended**, with page-batch **resume**, then we pulled a validated cache and terminated the instance. |
 
 **Tradeoff we accepted:** slightly slower pages/min on CPU Spot vs M5, in exchange for reliable overnight completion and not melting the laptop. Output contract unchanged: one `full_text_ocr.txt` for Day 2 (now shared via Git LFS).
 
@@ -179,15 +181,127 @@ ls -lh full_text_ocr.partial.txt
 
 Switch `ingest.py` to `strategy="fast"`, delete `full_text_ocr.txt`, and rerun.
 
+## Team enhancements (Day 2)
+
+**Baseline lab:** [Day 2 Lab 1 — Building a Vector Database with LangChain](https://github.com/CodePlatoon/aico-echo/blob/main/Module03-CICD/Week14-CICDPipeline/Day02/labs/01-lab-vector_db_using_lagchain.md) (`load_to_db.py` → `chroma_db`).
+
+### Workaround: Google free-tier rate limits → Bedrock embeddings
+
+|                  |                                                                                                                                                                                                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**      | Lab defaults to `GoogleGenerativeAIEmbeddings` + `GOOGLE_API_KEY`. Our OCR cache parses into **~16,700+ documents**. Google Gemini **free tier** returned `429 RESOURCE_EXHAUSTED` almost immediately — even with batching and retries, we could not finish embedding the full ordinances file. |
+| **Fix**          | Default embedding provider switched to **AWS Bedrock** (`amazon.titan-embed-text-v2:0`) via `langchain-aws`, using the Code Platoon AWS profile. Same LangChain + Chroma pipeline; only the embedder backend changed.                                                                           |
+| **Config**       | `EMBEDDING_PROVIDER` env var: `ollama` (default), `bedrock`, or `google`. Shared logic in `embeddings.py`.                                                                                                                                                                                      |
+| **Forward path** | Output is still `chroma_db/` with section metadata. **Use the same embedder** in Lab 2b (`check_db.py`) and Day 3 RAG — mismatched models break similarity search.                                                                                                                              |
+
+### Troubleshooting we hit (Lab 1 for Day 2)
+
+1. **LangChain 1.x import paths** — `langchain.schema.Document` → `langchain_core.documents.Document`; text splitter → `langchain_text_splitters`.
+2. **Deprecated Google model** — lab’s `models/embedding-001` → `404 NOT_FOUND`; updated to `models/gemini-embedding-001`.
+3. **`.env` variable name** — must be `GOOGLE_API_KEY` (all caps), not `Google_API_KEY`.
+4. **Free-tier quota** — `429 RESOURCE_EXHAUSTED` on ~17k docs; Bedrock unblocked the run.
+
+### Run Day 2 Lab 1 (`load_to_db.py`)
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Default: Bedrock (recommended for full ordinances file)
+export AWS_PROFILE=codeplatoon
+export AWS_REGION=us-east-1
+python3 load_to_db.py
+
+# Optional: force Google (small tests only on free tier)
+EMBEDDING_PROVIDER=google python3 load_to_db.py
+```
+
+Batch embedding with progress bar and exponential backoff on rate limits are built into `load_to_db.py`.
+
+### Local-first: Ollama (recommended for team laptops)
+
+Week 14 Day 2+ labs use **`nomic-embed-text`** for embeddings and **`llama3`** for the Day 3 chat LLM — both run locally via [Ollama](https://ollama.com). No Google/AWS keys required for embeddings.
+
+#### 1. Install Ollama
+
+| OS              | Command                                                                 |
+| --------------- | ----------------------------------------------------------------------- |
+| **macOS**       | Download from [ollama.com](https://ollama.com) or `brew install ollama` |
+| **WSL / Linux** | `curl -fsSL https://ollama.com/install.sh \| sh`                        |
+
+Start the server (macOS app does this automatically):
+
+```bash
+ollama serve
+```
+
+#### 2. Pull models
+
+```bash
+# Embeddings — Day 2 load_to_db.py + check_db.py
+ollama pull nomic-embed-text
+
+# Chat LLM — Day 3 RAG (pull now so you're ready)
+ollama pull llama3
+
+ollama list
+```
+
+#### 3. Configure project (optional — Ollama is already the default)
+
+```bash
+cp .env.example .env
+# EMBEDDING_PROVIDER=ollama  (default)
+```
+
+#### 4. Build and verify vector DB
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Rebuild chroma_db if you previously used Bedrock or Google (different vector space)
+rm -rf chroma_db
+python3 load_to_db.py
+python3 check_db.py
+```
+
+**Note:** ~16,700 docs on CPU is slow but steady — no cloud rate limits. Expect a multi-hour local run on laptops; leave Ollama running.
+
+#### Progress dashboard
+
+Watch embedding progress while `load_to_db.py` runs:
+
+```bash
+# Browser dashboard (http://127.0.0.1:8765)
+python3 watch_load_dashboard.py --web
+
+# Terminal dashboard (refreshes every 2s)
+python3 watch_load_dashboard.py
+```
+
+Writes `load_status.json` each batch (future runs). For runs already in flight, the dashboard parses `load_to_db_ollama.log` as a fallback.
+
+#### Day 3 preview (same Ollama stack)
+
+```python
+from langchain_ollama import ChatOllama  # or langchain_community per lab version
+
+llm = ChatOllama(model="llama3")
+```
+
+Use the **same** `nomic-embed-text` embedder everywhere you touch `chroma_db`.
+
 ## What is not in git
 
-| Path                          | Reason                                      |
-| ----------------------------- | ------------------------------------------- |
-| `venv/`                       | Local virtualenv                            |
-| `full_text_ocr.partial.txt`   | In-progress OCR batch cache                 |
-| `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR           |
-| `ingest_ocr.log`              | Local run log                               |
-| Other files in `source_data/` | Only `EP_Ordinances.pdf` is tracked via LFS |
+| Path                          | Reason                                            |
+| ----------------------------- | ------------------------------------------------- |
+| `venv/`                       | Local virtualenv                                  |
+| `full_text_ocr.partial.txt`   | In-progress OCR batch cache                       |
+| `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR                 |
+| `ingest_ocr.log`              | Local run log                                     |
+| `chroma_db/`                  | Local vector DB (rebuild when switching embedder) |
+| Other files in `source_data/` | Only `EP_Ordinances.pdf` is tracked via LFS       |
 
 `full_text_ocr.txt` **is** in git via **LFS** so the team does not re-run multi-hour OCR.
 
