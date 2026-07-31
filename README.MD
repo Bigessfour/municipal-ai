@@ -72,6 +72,23 @@ ls -lh chroma_db/chroma.sqlite3
 du -sh chroma_db
 ```
 
+### Troubleshooting: `chroma_db` missing or “hidden”
+
+**Use the app repo, not the challenges repo.** Clone [Bigessfour/municipal-ai](https://github.com/Bigessfour/municipal-ai) directly. The nested `municipal-ai/` copy inside `aico-challenges-w14` does **not** include `chroma_db/`.
+
+```bash
+git remote -v   # must show github.com/Bigessfour/municipal-ai.git
+git pull origin main
+git lfs install
+git lfs pull
+ls -lh chroma_db/chroma.sqlite3   # ~59 MB (133 bytes = LFS not pulled)
+```
+
+**VS Code / Cursor hiding the folder?** Check terminal first (`ls chroma_db`). If terminal shows it but the explorer does not:
+
+1. Settings → search `excludeGitIgnore` → turn **off** `Explorer: Exclude Git Ignore` (or add `chroma_db` to visibility exceptions).
+2. Settings → `files.exclude` → remove any `**/chroma_db` or `**/*.sqlite3` entries.
+
 ### 2. Python environment
 
 ```bash
