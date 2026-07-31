@@ -9,5 +9,8 @@ langchain-aws
 boto3
 langchain-ollama
 langchain-chroma
+langchain-text-splitters
+langchain-classic
+chromadb
 python-dotenv
 tqdm
