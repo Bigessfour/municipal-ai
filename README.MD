@@ -41,15 +41,9 @@ Day 1 is two labs: **Lab 1a — Project Foundation & CI**, and **Lab 1b — OCR 
 
 ## Source PDF workaround (Day 1)
 
-The Week 14 curriculum `Resources/EP_Ordinances.pdf` was **not usable** for OCR (bogus/corrupt file in the repo resources folder). We sourced the real **El Paso Code of Ordinances** PDF externally and added it to this project as `source_data/EP_Ordinances.pdf`.
+The Week 14 curriculum `Resources/EP_Ordinances.pdf` was **not usable** for OCR (bogus/corrupt file in the repo resources folder). We sourced the real **El Paso Code of Ordinances** PDF externally, ran OCR once (including EC2 Spot offload), and shared the result as `full_text_ocr.txt` via Git LFS.
 
-Because the file is ~72 MB, we **did not commit it as a normal git blob**. Instead:
-
-1. Installed Git LFS (`brew install git-lfs && git lfs install`)
-2. Tracked PDFs under `source_data/` via `.gitattributes`
-3. Committed the LFS pointer; the binary lives in GitHub LFS storage
-
-Collaborators must run `git lfs pull` after clone to get the real PDF **and** the shared OCR cache (not 133-byte LFS stubs).
+**The ~72 MB PDF is no longer in the repo** (removed to save clone/LFS space for collaborators). Day 2+ only needs `full_text_ocr.txt`. If you must re-run OCR, put a local PDF at `source_data/EP_Ordinances.pdf` (gitignored) — see `source_data/README.md`.
 
 ## Catch-up for collaborators
 
@@ -57,10 +51,9 @@ Collaborators must run `git lfs pull` after clone to get the real PDF **and** th
 
 Git LFS stores:
 
-| File                            | Approx. size | Purpose                    |
-| ------------------------------- | ------------ | -------------------------- |
-| `source_data/EP_Ordinances.pdf` | ~72 MB       | Source PDF                 |
-| `full_text_ocr.txt`             | ~7.6 MB      | Day 1 OCR cache for Day 2+ |
+| File                | Approx. size | Purpose                    |
+| ------------------- | ------------ | -------------------------- |
+| `full_text_ocr.txt` | ~7.6 MB      | Day 1 OCR cache for Day 2+ |
 
 ```bash
 brew install git-lfs
@@ -70,10 +63,10 @@ cd municipal-ai
 git lfs pull
 ```
 
-Confirm both LFS files are real (not tiny stubs):
+Confirm the OCR cache is real (not a tiny LFS stub):
 
 ```bash
-ls -lh source_data/EP_Ordinances.pdf full_text_ocr.txt
+ls -lh full_text_ocr.txt
 ```
 
 ### 2. Python environment
@@ -107,12 +100,12 @@ Lab reference: `aico-echo/Module03-CICD/Week14-CICDPipeline/Day01/labs/02-lab-In
 
 ### El Paso PDF + Git LFS workaround
 
-|          |                                                                                                       |
-| -------- | ----------------------------------------------------------------------------------------------------- |
-| Problem  | The Week 14 `Resources/EP_Ordinances.pdf` was a bogus file — OCR failed or produced garbage           |
-| Fix      | Sourced the real El Paso ordinances PDF externally                                                    |
-| Delivery | Committed via **Git LFS** so the team shares one canonical ~72 MB file without blowing up git history |
-| Path     | `source_data/EP_Ordinances.pdf`                                                                       |
+|          |                                                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------------------------------ |
+| Problem  | The Week 14 `Resources/EP_Ordinances.pdf` was a bogus file — OCR failed or produced garbage                        |
+| Fix      | Sourced the real El Paso ordinances PDF externally, OCR’d once, shared `full_text_ocr.txt` via LFS                 |
+| Delivery | PDF was temporarily LFS-tracked; **removed from repo** later to save space — collaborators use OCR cache only      |
+| Path     | Local-only if needed: `source_data/EP_Ordinances.pdf` (gitignored). Shared artifact: `full_text_ocr.txt` (LFS) |
 
 ### EC2 Spot OCR offload (compute workaround)
 
@@ -301,7 +294,7 @@ Use the **same** `nomic-embed-text` embedder everywhere you touch `chroma_db`.
 | `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR                 |
 | `ingest_ocr.log`              | Local run log                                     |
 | `chroma_db/`                  | Local vector DB (rebuild when switching embedder) |
-| Other files in `source_data/` | Only `EP_Ordinances.pdf` is tracked via LFS       |
+| Other files in `source_data/` | Local PDFs gitignored; see `source_data/README.md` |
 
 `full_text_ocr.txt` **is** in git via **LFS** so the team does not re-run multi-hour OCR.
 
