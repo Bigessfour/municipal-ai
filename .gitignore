@@ -3,8 +3,9 @@
 .env.*
 !.env.example
 venv/
-chroma_db/
+# chroma_db/ is shared via Git LFS (see .gitattributes)
 *.sqlite3
+!chroma_db/chroma.sqlite3
 
 # source_data: keep local PDFs out of git (OCR cache is LFS-tracked instead)
 source_data/*

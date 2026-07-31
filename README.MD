@@ -51,9 +51,10 @@ The Week 14 curriculum `Resources/EP_Ordinances.pdf` was **not usable** for OCR 
 
 Git LFS stores:
 
-| File                | Approx. size | Purpose                    |
-| ------------------- | ------------ | -------------------------- |
-| `full_text_ocr.txt` | ~7.6 MB      | Day 1 OCR cache for Day 2+ |
+| File / folder       | Approx. size | Purpose                                      |
+| ------------------- | ------------ | -------------------------------------------- |
+| `full_text_ocr.txt` | ~7.6 MB      | Day 1 OCR cache for Day 2+                   |
+| `chroma_db/`        | ~107 MB      | Day 2 vector DB (Ollama `nomic-embed-text`)    |
 
 ```bash
 brew install git-lfs
@@ -63,10 +64,12 @@ cd municipal-ai
 git lfs pull
 ```
 
-Confirm the OCR cache is real (not a tiny LFS stub):
+Confirm LFS assets are real (not tiny pointer stubs):
 
 ```bash
 ls -lh full_text_ocr.txt
+ls -lh chroma_db/chroma.sqlite3
+du -sh chroma_db
 ```
 
 ### 2. Python environment
@@ -299,10 +302,9 @@ Use the **same** `nomic-embed-text` embedder everywhere you touch `chroma_db`.
 | `full_text_ocr.partial.txt`   | In-progress OCR batch cache                        |
 | `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR                  |
 | `ingest_ocr.log`              | Local run log                                      |
-| `chroma_db/`                  | Local vector DB (rebuild when switching embedder)  |
 | Other files in `source_data/` | Local PDFs gitignored; see `source_data/README.md` |
 
-`full_text_ocr.txt` **is** in git via **LFS** so the team does not re-run multi-hour OCR.
+`full_text_ocr.txt` and `chroma_db/` **are** in git via **LFS** so collaborators skip multi-hour OCR and vector DB rebuilds (must use the same `nomic-embed-text` embedder). Re-run `load_to_db.py` only if you change embedding provider.
 
 ---
 
