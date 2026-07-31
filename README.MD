@@ -100,11 +100,11 @@ Lab reference: `aico-echo/Module03-CICD/Week14-CICDPipeline/Day01/labs/02-lab-In
 
 ### El Paso PDF + Git LFS workaround
 
-|          |                                                                                                                    |
-| -------- | ------------------------------------------------------------------------------------------------------------------ |
-| Problem  | The Week 14 `Resources/EP_Ordinances.pdf` was a bogus file — OCR failed or produced garbage                        |
-| Fix      | Sourced the real El Paso ordinances PDF externally, OCR’d once, shared `full_text_ocr.txt` via LFS                 |
-| Delivery | PDF was temporarily LFS-tracked; **removed from repo** later to save space — collaborators use OCR cache only      |
+|          |                                                                                                                |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| Problem  | The Week 14 `Resources/EP_Ordinances.pdf` was a bogus file — OCR failed or produced garbage                    |
+| Fix      | Sourced the real El Paso ordinances PDF externally, OCR’d once, shared `full_text_ocr.txt` via LFS             |
+| Delivery | PDF was temporarily LFS-tracked; **removed from repo** later to save space — collaborators use OCR cache only  |
 | Path     | Local-only if needed: `source_data/EP_Ordinances.pdf` (gitignored). Shared artifact: `full_text_ocr.txt` (LFS) |
 
 ### EC2 Spot OCR offload (compute workaround)
@@ -275,25 +275,31 @@ python3 watch_load_dashboard.py
 
 Writes `load_status.json` each batch (future runs). For runs already in flight, the dashboard parses `load_to_db_ollama.log` as a fallback.
 
-#### Day 3 preview (same Ollama stack)
+#### Day 3 RAG (`main.py`)
 
-```python
-from langchain_ollama import ChatOllama  # or langchain_community per lab version
+```bash
+# Lab baseline (similarity, k=3)
+python3 main.py
 
-llm = ChatOllama(model="llama3")
+# Retrieval-quality enhancement: MMR + tunable k
+python3 main.py --search-type mmr --k 3
+
+# Evidence helpers (no interactive loop)
+python3 compare_retrieval_quality.py
+python3 eval_retrieval_quality.py
 ```
 
 Use the **same** `nomic-embed-text` embedder everywhere you touch `chroma_db`.
 
 ## What is not in git
 
-| Path                          | Reason                                            |
-| ----------------------------- | ------------------------------------------------- |
-| `venv/`                       | Local virtualenv                                  |
-| `full_text_ocr.partial.txt`   | In-progress OCR batch cache                       |
-| `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR                 |
-| `ingest_ocr.log`              | Local run log                                     |
-| `chroma_db/`                  | Local vector DB (rebuild when switching embedder) |
+| Path                          | Reason                                             |
+| ----------------------------- | -------------------------------------------------- |
+| `venv/`                       | Local virtualenv                                   |
+| `full_text_ocr.partial.txt`   | In-progress OCR batch cache                        |
+| `full_text_ocr.progress.json` | Resume checkpoint for chunked OCR                  |
+| `ingest_ocr.log`              | Local run log                                      |
+| `chroma_db/`                  | Local vector DB (rebuild when switching embedder)  |
 | Other files in `source_data/` | Local PDFs gitignored; see `source_data/README.md` |
 
 `full_text_ocr.txt` **is** in git via **LFS** so the team does not re-run multi-hour OCR.
