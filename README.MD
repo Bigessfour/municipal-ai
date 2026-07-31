@@ -51,10 +51,10 @@ The Week 14 curriculum `Resources/EP_Ordinances.pdf` was **not usable** for OCR 
 
 Git LFS stores:
 
-| File / folder       | Approx. size | Purpose                                      |
-| ------------------- | ------------ | -------------------------------------------- |
-| `full_text_ocr.txt` | ~7.6 MB      | Day 1 OCR cache for Day 2+                   |
-| `chroma_db/`        | ~107 MB      | Day 2 vector DB (Ollama `nomic-embed-text`)    |
+| File / folder       | Approx. size | Purpose                                     |
+| ------------------- | ------------ | ------------------------------------------- |
+| `full_text_ocr.txt` | ~7.6 MB      | Day 1 OCR cache for Day 2+                  |
+| `chroma_db/`        | ~107 MB      | Day 2 vector DB (Ollama `nomic-embed-text`) |
 
 ```bash
 brew install git-lfs
@@ -84,10 +84,18 @@ git lfs pull
 ls -lh chroma_db/chroma.sqlite3   # ~59 MB (133 bytes = LFS not pulled)
 ```
 
-**VS Code / Cursor hiding the folder?** Check terminal first (`ls chroma_db`). If terminal shows it but the explorer does not:
+**VS Code / Cursor hiding the folder?** The folder may exist on disk but be hidden in the sidebar. Check terminal first:
 
-1. Settings → search `excludeGitIgnore` → turn **off** `Explorer: Exclude Git Ignore` (or add `chroma_db` to visibility exceptions).
-2. Settings → `files.exclude` → remove any `**/chroma_db` or `**/*.sqlite3` entries.
+```bash
+ls -la chroma_db
+```
+
+If terminal shows files but the explorer does not, this repo includes `.vscode/settings.json` to force `chroma_db` visible. After `git pull`, reload the window (`Cmd+Shift+P` → **Developer: Reload Window**).
+
+Also check user settings manually:
+
+1. **Explorer: Exclude Git Ignore** → off
+2. **Files: Exclude** → remove any `**/chroma_db`, `**/*.sqlite3`, or `**/*.bin` entries
 
 ### 2. Python environment
 

@@ -1,0 +1,7 @@
+{
+  "explorer.excludeGitIgnore": false,
+  "files.exclude": {
+    "**/chroma_db": false,
+    "**/chroma_db/**": false
+  }
+}
